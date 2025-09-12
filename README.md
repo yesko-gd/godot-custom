@@ -7,4 +7,4 @@ Set a cells height with `set_cell_height(...)`, retrieve its height with `get_ce
 
 ## Image
 
-I've also removed the warning in the first few lines of `Image.load_from_file()` because they're annoying me.
+I've also removed the warning in the first few lines of `Image.load_from_file()` because it's annoying me.
