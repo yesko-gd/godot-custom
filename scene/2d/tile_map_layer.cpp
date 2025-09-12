@@ -357,7 +357,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 						ci = prev_ci;
 					}
 
-					const Vector2 local_tile_pos = tile_set->map_to_local(cell_data.coords);
+					const Vector2 local_tile_pos = tile_set->map_to_local(cell_data.coords) + Vector2(0, -cell_data.height);
 
 					// Random animation offset.
 					real_t random_animation_offset = 0.0;
@@ -2119,10 +2119,14 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMapLayer::fix_invalid_tiles);
 	ClassDB::bind_method(D_METHOD("clear"), &TileMapLayer::clear);
 
+	ClassDB::bind_method(D_METHOD("set_cell_height", "coords", "height"), &TileMapLayer::set_cell_height, DEFVAL(0));
+
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMapLayer::get_cell_source_id);
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords"), &TileMapLayer::get_cell_atlas_coords);
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "coords"), &TileMapLayer::get_cell_alternative_tile);
 	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "coords"), &TileMapLayer::get_cell_tile_data);
+
+	ClassDB::bind_method(D_METHOD("get_cell_height", "coords"), &TileMapLayer::get_cell_height);
 
 	ClassDB::bind_method(D_METHOD("is_cell_flipped_h", "coords"), &TileMapLayer::is_cell_flipped_h);
 	ClassDB::bind_method(D_METHOD("is_cell_flipped_v", "coords"), &TileMapLayer::is_cell_flipped_v);
@@ -2736,6 +2740,7 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 		// Insert a new cell in the tile map.
 		CellData new_cell_data;
 		new_cell_data.coords = pk;
+		new_cell_data.height = 0;
 		E = tile_map_layer_data.insert(pk, new_cell_data);
 	} else {
 		if (E->value.cell.source_id == source_id && E->value.cell.get_atlas_coords() == atlas_coords && E->value.cell.alternative_tile == alternative_tile) {
@@ -2747,6 +2752,21 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 	c.source_id = source_id;
 	c.set_atlas_coords(atlas_coords);
 	c.alternative_tile = alternative_tile;
+
+	// Make the given cell dirty.
+	if (!E->value.dirty_list_element.in_list()) {
+		dirty.cell_list.add(&(E->value.dirty_list_element));
+	}
+	_queue_internal_update();
+
+	used_rect_cache_dirty = true;
+}
+
+void TileMapLayer::set_cell_height(const Vector2i &p_coords, const int p_height) {
+	HashMap<Vector2i, CellData>::Iterator E = tile_map_layer_data.find(p_coords);
+	ERR_FAIL_COND_MSG(!E, "TileMapLayer has no cell at coords " + stringify_variants(p_coords));
+
+	E->value.height = p_height;
 
 	// Make the given cell dirty.
 	if (!E->value.dirty_list_element.in_list()) {
@@ -2829,6 +2849,15 @@ TileData *TileMapLayer::get_cell_tile_data(const Vector2i &p_coords) const {
 	}
 
 	return nullptr;
+}
+
+int TileMapLayer::get_cell_height(const Vector2i &p_coords) const {
+	HashMap<Vector2i, CellData>::ConstIterator E = tile_map_layer_data.find(p_coords);
+
+	if (!E)
+		return 0;
+
+	return E->value.height;
 }
 
 TypedArray<Vector2i> TileMapLayer::get_used_cells() const {
