@@ -381,6 +381,8 @@ public:
 		DIRTY_FLAGS_MAX,
 	};
 
+	static constexpr int DEFAULT_CELL_HEIGHT = -1;
+
 private:
 	static constexpr float FP_ADJUST = 0.00001;
 
@@ -555,7 +557,7 @@ public:
 	void fix_invalid_tiles();
 	void clear();
 	
-	void set_cell_height(const Vector2i &p_coords, const int p_height = 0);
+	void set_cell_height(const Vector2i &p_coords, const int p_height = DEFAULT_CELL_HEIGHT);
 
 	int get_cell_source_id(const Vector2i &p_coords) const;
 	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;

@@ -2119,7 +2119,7 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMapLayer::fix_invalid_tiles);
 	ClassDB::bind_method(D_METHOD("clear"), &TileMapLayer::clear);
 
-	ClassDB::bind_method(D_METHOD("set_cell_height", "coords", "height"), &TileMapLayer::set_cell_height, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("set_cell_height", "coords", "height"), &TileMapLayer::set_cell_height, DEFVAL(DEFAULT_CELL_HEIGHT));
 
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMapLayer::get_cell_source_id);
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords"), &TileMapLayer::get_cell_atlas_coords);
@@ -2742,6 +2742,8 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 		new_cell_data.coords = pk;
 		new_cell_data.height = 0;
 		E = tile_map_layer_data.insert(pk, new_cell_data);
+
+		set_cell_height(p_coords);
 	} else {
 		if (E->value.cell.source_id == source_id && E->value.cell.get_atlas_coords() == atlas_coords && E->value.cell.alternative_tile == alternative_tile) {
 			return; // Nothing changed.
@@ -2760,6 +2762,7 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 	_queue_internal_update();
 
 	used_rect_cache_dirty = true;
+
 }
 
 void TileMapLayer::set_cell_height(const Vector2i &p_coords, const int p_height) {
