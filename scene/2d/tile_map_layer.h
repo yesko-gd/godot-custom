@@ -348,6 +348,8 @@ public:
 	enum DirtyFlags {
 		DIRTY_FLAGS_LAYER_ENABLED = 0,
 
+		DIRTY_FLAGS_HEIGHT_ENABLED_SET,
+
 		DIRTY_FLAGS_LAYER_IN_TREE,
 		DIRTY_FLAGS_LAYER_IN_CANVAS,
 		DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM,
@@ -390,6 +392,7 @@ private:
 	HashMap<Vector2i, CellData> tile_map_layer_data;
 
 	bool enabled = true;
+	bool height_enabled = true;
 	Ref<TileSet> tile_set;
 
 	HighlightMode highlight_mode = HIGHLIGHT_MODE_DEFAULT;
@@ -608,6 +611,10 @@ public:
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
+
+	void set_height_enabled(bool p_height_enabled);
+	bool is_height_enabled() const;	
+
 	void set_tile_set(const Ref<TileSet> &p_tile_set);
 	Ref<TileSet> get_tile_set() const;
 

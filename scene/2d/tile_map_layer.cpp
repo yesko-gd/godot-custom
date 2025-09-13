@@ -249,7 +249,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 	if (!forced_cleanup) {
 		// List all quadrants to update, recreating them if needed.
-		if (dirty.flags[DIRTY_FLAGS_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _rendering_was_cleaned_up) {
+		if (dirty.flags[DIRTY_FLAGS_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || dirty.flags[DIRTY_FLAGS_HEIGHT_ENABLED_SET] || _rendering_was_cleaned_up) {
 			// Update all cells.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 				CellData &cell_data = kv.value;
@@ -357,7 +357,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 						ci = prev_ci;
 					}
 
-					const Vector2 local_tile_pos = tile_set->map_to_local(cell_data.coords) + Vector2(0, -cell_data.height);
+					const Vector2 local_tile_pos = tile_set->map_to_local(cell_data.coords) + Vector2(0, height_enabled * -cell_data.height);
 
 					// Random animation offset.
 					real_t random_animation_offset = 0.0;
@@ -2168,6 +2168,9 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &TileMapLayer::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &TileMapLayer::is_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_height_enabled", "height_enabled"), &TileMapLayer::set_height_enabled);
+	ClassDB::bind_method(D_METHOD("is_height_enabled"), &TileMapLayer::is_height_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_tile_set", "tile_set"), &TileMapLayer::set_tile_set);
 	ClassDB::bind_method(D_METHOD("get_tile_set"), &TileMapLayer::get_tile_set);
 
@@ -2206,6 +2209,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "tile_map_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tile_map_data_from_array", "get_tile_map_data_as_array");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "height_enabled"), "set_height_enabled", "is_height_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tile_set", "get_tile_set");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "occlusion_enabled"), "set_occlusion_enabled", "is_occlusion_enabled");
@@ -3140,6 +3144,21 @@ void TileMapLayer::set_enabled(bool p_enabled) {
 
 bool TileMapLayer::is_enabled() const {
 	return enabled;
+}
+
+void TileMapLayer::set_height_enabled(bool p_height_enabled) {
+	if (height_enabled == p_height_enabled)
+		return;
+
+	height_enabled = p_height_enabled;
+
+	dirty.flags[DIRTY_FLAGS_HEIGHT_ENABLED_SET] = true;
+
+	_queue_internal_update();
+}
+
+bool TileMapLayer::is_height_enabled() const {
+	return height_enabled;
 }
 
 void TileMapLayer::set_tile_set(const Ref<TileSet> &p_tile_set) {
