@@ -2740,7 +2740,6 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 		// Insert a new cell in the tile map.
 		CellData new_cell_data;
 		new_cell_data.coords = pk;
-		new_cell_data.height = 0;
 		E = tile_map_layer_data.insert(pk, new_cell_data);
 
 		set_cell_height(p_coords);
@@ -2768,6 +2767,9 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 void TileMapLayer::set_cell_height(const Vector2i &p_coords, const int p_height) {
 	HashMap<Vector2i, CellData>::Iterator E = tile_map_layer_data.find(p_coords);
 	ERR_FAIL_COND_MSG(!E, "TileMapLayer has no cell at coords " + stringify_variants(p_coords));
+
+	if (E->value.height == p_height)
+		return;
 
 	E->value.height = p_height;
 
